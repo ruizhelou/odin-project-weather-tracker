@@ -1,4 +1,12 @@
-async function getWeatherData(location, datetime1, datetime2, unitGroup) {
+let weatherData = {
+    weatherDays: [],
+    units: { },
+    weatherToday: { }
+}
+let selectedWeatherDay = null
+let selectedWeatherCard = null
+
+async function updateWeatherData(location, datetime1, datetime2, unitGroup) {
     let url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location}`
     if(datetime1 != null && datetime1 !== '') {
         console.log('adding datetime1')
@@ -13,7 +21,7 @@ async function getWeatherData(location, datetime1, datetime2, unitGroup) {
     const response = await fetch(url)
     const responseJson = await response.json()
 
-    const weatherData = {
+    weatherData = {
         weatherDays: [],
         units: { },
         weatherToday: { }
@@ -35,16 +43,18 @@ async function getWeatherData(location, datetime1, datetime2, unitGroup) {
     }
     weatherData.weatherToday.resolvedAddress = responseJson.resolvedAddress
     if(unitGroup === 'uk') {
+        weatherData.units.type = 'uk'
         weatherData.units.temperature = '°C'
         weatherData.units.speed = 'km/h'
     } else if(unitGroup === 'us') {
+        weatherData.units.type = 'us'
         weatherData.units.temperature = '°F'
         weatherData.units.speed = 'mph'
     }
     return weatherData
 }
 
-const submitButton = document.querySelector("button")
+const submitButton = document.querySelector('button[type="submit"]')
 submitButton.addEventListener('click', event => {
     const form = document.querySelector('form')
 
@@ -55,12 +65,46 @@ submitButton.addEventListener('click', event => {
         const endDate = document.querySelector("#end-date")
         const unitGroup = document.querySelector('input[name="unit"]:checked')
 
-        getWeatherData(weatherSearchBar.value, startDate.value, endDate.value, unitGroup.value)
+        updateWeatherData(weatherSearchBar.value, startDate.value, endDate.value, unitGroup.value)
         .then(weatherData => {
+            selectedWeatherDay = null
+            selectedWeatherCard = null
             renderWeatherCards(weatherData)
             renderWeatherToday(weatherData)
+            closeSidebar()
         })
         .catch(error => alert('Oops! Something went wrong..'))
+    }
+})
+
+const toggleUnits = document.querySelector(".toggle-units")
+toggleUnits.addEventListener('click', event => {
+    let convertTempFn = null;
+    let convertSpeedFn = null;
+    if(weatherData.units.type === 'us') {
+        weatherData.units.type = 'uk'
+        weatherData.units.temperature = '°C'
+        weatherData.units.speed = 'km/h'
+        convertTempFn = convertCelsius
+        convertSpeedFn = convertKilometer
+    } else if (weatherData.units.type === 'uk') {
+        weatherData.units.type = 'us'
+        weatherData.units.temperature = '°F'
+        weatherData.units.speed = 'mph'
+        convertTempFn = convertFahrenheit
+        convertSpeedFn = convertMiles
+    }
+    for(const day of weatherData.weatherDays) {
+        day.feelslike = convertTempFn(day.feelslike)
+        day.temp = convertTempFn(day.temp)
+        day.tempmin = convertTempFn(day.tempmin)
+        day.tempmax = convertTempFn(day.tempmax)
+        day.windspeed = convertSpeedFn(day.windspeed)
+    }
+    renderWeatherCards(weatherData)
+    renderWeatherToday(weatherData)
+    if(selectedWeatherDay !== null) {
+        openSidebar(selectedWeatherDay, weatherData.units)
     }
 })
 
@@ -79,9 +123,6 @@ function convertKilometer(miles) {
 function convertMiles(kilometer) {
     return (0.621371 * kilometer).toFixed(1)
 }
-
-let selectedWeatherDay = null
-let selectedWeatherCard = null
 
 function renderWeatherCards(weatherData) {
     const content = document.querySelector('.content')
@@ -113,6 +154,10 @@ function renderWeatherCards(weatherData) {
                 openSidebar(weatherDay, weatherData.units)
             }
         })
+        if(weatherDay === selectedWeatherDay) {
+            weatherCard.classList.add('selected-card')
+            selectedWeatherCard = weatherCard
+        }
         content.appendChild(weatherCard)
 
         const cardHeader = document.createElement('div')
@@ -222,11 +267,10 @@ function renderWeatherToday(weatherData) {
 
 
 
-getWeatherData('london,uk', null, null, 'uk').then(weatherData => {
+updateWeatherData('london,uk', null, null, 'uk').then(weatherData => {
     renderWeatherCards(weatherData)
     renderWeatherToday(weatherData)
 })
 
-// TODO button to toggle between temp units
 // TODO loading time display
 // TODO card color?
