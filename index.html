@@ -5,16 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="index.js" defer></script>
     <link rel="stylesheet" href="style.css">
-    <title>Document</title>
+    <title>Weather tracker</title>
 </head>
 <body>
     <div class="container">
-        <div class="weather-today">
-            today
+        <div class="header">
+            <div class="weather-today"></div>
+            <form action="" method="get">
+                <div>
+                    <label for="weather-search">Weather for:</label>
+                    <input type="text" id="weather-search" name="weather-search" placeholder="London,UK" required>
+                </div>
+                <div>
+                    <label for="start-date">Start date:</label>
+                    <input type="date" id="start-date" name="start-date"/>
+                </div>
+                <div>
+                    <label for="end-date">End date:</label>
+                    <input type="date" id="end-date" name="end-date"/>
+                </div>
+                <div>
+                    <button type="submit">Submit</button>
+                </div>
+            </form>
         </div>
-        <div class="weather-forecast">
-            forecast
-        </div>
+        <div class="content"></div>
     </div>
+    <div class="sidebar"></div>
 </body>
-</html>
+</html> 
