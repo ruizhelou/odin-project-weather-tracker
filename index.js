@@ -1,4 +1,4 @@
-async function getWeatherData(location, datetime1, datetime2) {
+async function getWeatherData(location, datetime1, datetime2, unitGroup) {
     let url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location}`
     if(datetime1 != null && datetime1 !== '') {
         console.log('adding datetime1')
@@ -8,14 +8,14 @@ async function getWeatherData(location, datetime1, datetime2) {
         console.log('adding datetime2')
         url += `/${datetime2}`
     }
-    url += `?key=EEMKUAAEHGRSNK2447KVJTMYW&iconSet=icons2`
+    url += `?key=EEMKUAAEHGRSNK2447KVJTMYW&iconSet=icons2&unitGroup=${unitGroup}`
 
     const response = await fetch(url)
     const responseJson = await response.json()
-    console.log(responseJson)
 
     const weatherData = {
         weatherDays: [],
+        units: { },
         weatherToday: { }
     }
     for(const day of responseJson.days) {
@@ -34,6 +34,13 @@ async function getWeatherData(location, datetime1, datetime2) {
         })
     }
     weatherData.weatherToday.resolvedAddress = responseJson.resolvedAddress
+    if(unitGroup === 'uk') {
+        weatherData.units.temperature = '°C'
+        weatherData.units.speed = 'km/h'
+    } else if(unitGroup === 'us') {
+        weatherData.units.temperature = '°F'
+        weatherData.units.speed = 'mph'
+    }
     return weatherData
 }
 
@@ -46,8 +53,9 @@ submitButton.addEventListener('click', event => {
         const weatherSearchBar = document.querySelector("#weather-search")
         const startDate = document.querySelector("#start-date")
         const endDate = document.querySelector("#end-date")
+        const unitGroup = document.querySelector('input[name="unit"]:checked')
 
-        getWeatherData(weatherSearchBar.value, startDate.value, endDate.value)
+        getWeatherData(weatherSearchBar.value, startDate.value, endDate.value, unitGroup.value)
         .then(weatherData => {
             renderWeatherCards(weatherData)
             renderWeatherToday(weatherData)
@@ -55,6 +63,22 @@ submitButton.addEventListener('click', event => {
         .catch(error => alert('Oops! Something went wrong..'))
     }
 })
+
+function convertCelsius(fahrenheit) {
+    return ((fahrenheit - 32) / 1.8).toFixed(1)
+}
+
+function convertFahrenheit(celsius) {
+    return (celsius * 1.8 + 32).toFixed(1)
+}
+
+function convertKilometer(miles) {
+    return (1.60934 * miles).toFixed(1)
+}
+
+function convertMiles(kilometer) {
+    return (0.621371 * kilometer).toFixed(1)
+}
 
 let selectedWeatherDay = null
 let selectedWeatherCard = null
@@ -71,7 +95,7 @@ function renderWeatherCards(weatherData) {
                 selectedWeatherCard = weatherCard
                 selectedWeatherCard.classList.add('selected-card')
                 selectedWeatherDay = weatherDay
-                openSidebar(weatherDay)
+                openSidebar(weatherDay, weatherData.units)
             }
             // Click selected card
             else if(selectedWeatherDay === weatherDay) {
@@ -86,7 +110,7 @@ function renderWeatherCards(weatherData) {
                 selectedWeatherCard = weatherCard
                 selectedWeatherCard.classList.add('selected-card')
                 selectedWeatherDay = weatherDay
-                openSidebar(weatherDay)
+                openSidebar(weatherDay, weatherData.units)
             }
         })
         content.appendChild(weatherCard)
@@ -116,17 +140,17 @@ function renderWeatherCards(weatherData) {
 
         const minTemp = document.createElement('div')
         minTemp.classList.add('min-temp')
-        minTemp.textContent = `Min: ${weatherDay.tempmin}`
+        minTemp.textContent = `Min: ${weatherDay.tempmin}${weatherData.units.temperature}`
         cardBody.appendChild(minTemp)
 
         const maxTemp = document.createElement('div')
         maxTemp.classList.add('max-temp')
-        maxTemp.textContent = `Max: ${weatherDay.tempmax}`
+        maxTemp.textContent = `Max: ${weatherDay.tempmax}${weatherData.units.temperature}`
         cardBody.appendChild(maxTemp)
     }
 }
 
-function openSidebar(weatherDay) {
+function openSidebar(weatherDay, units) {
     const container = document.querySelector('.container')
     container.style.marginRight = '250px'
     const sidebar = document.querySelector('.sidebar')
@@ -151,32 +175,32 @@ function openSidebar(weatherDay) {
 
     const feelslike = document.createElement('div')
     feelslike.classList.add('sidebar-item')
-    feelslike.textContent = `Feels like: ${weatherDay.feelslike}`
+    feelslike.textContent = `Feels like: ${weatherDay.feelslike}${units.temperature}`
     sidebar.appendChild(feelslike)
 
     const temp = document.createElement('div')
     temp.classList.add('sidebar-item')
-    temp.textContent = `Temp: ${weatherDay.temp}`
+    temp.textContent = `Temp: ${weatherDay.temp}${units.temperature}`
     sidebar.appendChild(temp)
 
     const tempmin = document.createElement('div')
     tempmin.classList.add('sidebar-item')
-    tempmin.textContent = `Min temp: ${weatherDay.tempmin}`
+    tempmin.textContent = `Min temp: ${weatherDay.tempmin}${units.temperature}`
     sidebar.appendChild(tempmin)
 
     const tempmax = document.createElement('div')
     tempmax.classList.add('sidebar-item')
-    tempmax.textContent = `Max temp: ${weatherDay.tempmax}`
+    tempmax.textContent = `Max temp: ${weatherDay.tempmax}${units.temperature}`
     sidebar.appendChild(tempmax)
 
     const windspeed = document.createElement('div')
     windspeed.classList.add('sidebar-item')
-    windspeed.textContent = `Wind speed: ${weatherDay.windspeed}`
+    windspeed.textContent = `Wind speed: ${weatherDay.windspeed} ${units.speed}`
     sidebar.appendChild(windspeed)
 
     const humidity = document.createElement('div')
     humidity.classList.add('sidebar-item')
-    humidity.textContent = `Humidity: ${weatherDay.humidity}`
+    humidity.textContent = `Humidity: ${weatherDay.humidity}%`
     sidebar.appendChild(humidity)
 }
 
@@ -196,7 +220,9 @@ function renderWeatherToday(weatherData) {
     weatherToday.appendChild(location)
 }
 
-getWeatherData('london,uk').then(weatherData => {
+
+
+getWeatherData('london,uk', null, null, 'uk').then(weatherData => {
     renderWeatherCards(weatherData)
     renderWeatherToday(weatherData)
 })

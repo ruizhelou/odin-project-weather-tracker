@@ -24,10 +24,18 @@
                     <label for="end-date">End date:</label>
                     <input type="date" id="end-date" name="end-date"/>
                 </div>
+                <fieldset>
+                    <legend>Units:</legend>
+                    <input type="radio" id="uk-unit" name="unit" value='uk' checked/>
+                    <label for="uk-unit">UK</label>
+                    <input type="radio" id="us-unit" name="unit" value='us'/>
+                    <label for="us-unit">US</label>
+                </fieldset>
                 <div>
                     <button type="submit">Submit</button>
                 </div>
             </form>
+            <button class="toggle-units">Toggle units</button>
         </div>
         <div class="content"></div>
     </div>
