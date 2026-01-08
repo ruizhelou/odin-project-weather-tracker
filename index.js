@@ -10,10 +10,14 @@ async function getWeatherData(location, datetime1, datetime2) {
 
     const response = await fetch(url)
     const responseJson = await response.json()
+    console.log(responseJson)
 
-    const weatherData = []
+    const weatherData = {
+        weatherForecast: [],
+        weatherToday: { }
+    }
     for(const day of responseJson.days) {
-        weatherData.push({
+        weatherData.weatherForecast.push({
             'datetime': responseJson.days[0].datetime,
             'conditions': responseJson.days[0].conditions,
             'description': responseJson.days[0].description,
@@ -26,6 +30,12 @@ async function getWeatherData(location, datetime1, datetime2) {
             'icon': responseJson.days[0].icon
         })
     }
+    weatherData.weatherToday.icon = responseJson.currentConditions.icon
+    weatherData.weatherToday.conditions = responseJson.currentConditions.conditions
+    weatherData.weatherToday.temp = responseJson.currentConditions.temp
+    weatherData.weatherToday.conditions = responseJson.currentConditions.conditions
+
+    console.log(weatherData)
     return weatherData
 }
 
