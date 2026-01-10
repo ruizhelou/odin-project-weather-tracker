@@ -169,6 +169,7 @@ function renderWeatherCards(weatherData) {
             weatherCard.classList.add('selected-card')
             selectedWeatherCard = weatherCard
         }
+        weatherCard.style.backgroundColor = getTempColour(weatherDay, weatherData.units.type)
         content.appendChild(weatherCard)
 
         const cardHeader = document.createElement('div')
@@ -276,11 +277,28 @@ function renderWeatherToday(weatherData) {
     weatherToday.appendChild(location)
 }
 
+function getTempColour(weatherDay, tempUnit) {
+    let temperature = weatherDay.temp
+    if(tempUnit === 'us') {
+        temperature = convertCelsius(temperature)
+    }
+    if(temperature <= 0) {
+        return '#0B3C5D'
+    } else if(temperature <= 10) {
+        return '#1E90FF'
+    } else if(temperature <= 20) {
+        return '#66BB6A'
+    } else if(temperature <= 30) {
+        return '#fdcb35ff'
+    } else if(temperature <= 40) {
+        return '#FB8C00'
+    } else {
+        return '#E53935'
+    }
+}
 
 renderLoader()
 updateWeatherData('london,uk', null, null, 'uk').then(weatherData => {
     renderWeatherCards(weatherData)
     renderWeatherToday(weatherData)
 })
-
-// TODO card color?
