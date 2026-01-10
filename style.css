@@ -6,9 +6,9 @@
     font-family: sans-serif;
 
     /* Debugging */
-    /* border-style: solid;
+    border-style: solid;
     border-width: 1px;
-    border-color: red; */
+    border-color: red;
 }
 
 .container {
@@ -83,7 +83,10 @@ button:hover {
 .content {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
     gap: 20px;
+    width: 100%;
 }
 
 .weather-card {
@@ -144,4 +147,24 @@ button:hover {
     border-width: 2px;
     border-color: darkgray;
     padding: 10px;
+}
+
+@keyframes rotation {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loader {
+    width: 48px;
+    height: 48px;
+    border: 5px solid darkgray;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation 1s linear infinite;
 }

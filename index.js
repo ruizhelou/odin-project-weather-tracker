@@ -54,22 +54,33 @@ async function updateWeatherData(location, datetime1, datetime2, unitGroup) {
     return weatherData
 }
 
+function renderLoader() {
+    const loader = document.createElement('span')
+    loader.classList.add('loader')
+    
+    const content = document.querySelector('.content')
+    content.textContent = ''
+    content.appendChild(loader)
+}
+
 const submitButton = document.querySelector('button[type="submit"]')
 submitButton.addEventListener('click', event => {
     const form = document.querySelector('form')
 
     if(form.checkValidity()) {
         event.preventDefault()
+        renderLoader()
+
         const weatherSearchBar = document.querySelector("#weather-search")
         const startDate = document.querySelector("#start-date")
         const endDate = document.querySelector("#end-date")
         const unitGroup = document.querySelector('input[name="unit"]:checked')
-
+        
         updateWeatherData(weatherSearchBar.value, startDate.value, endDate.value, unitGroup.value)
         .then(weatherData => {
             selectedWeatherDay = null
             selectedWeatherCard = null
-            renderWeatherCards(weatherData)
+            renderWeatherCards(weatherData) // Removes loader, then renders weather cards
             renderWeatherToday(weatherData)
             closeSidebar()
         })
@@ -266,11 +277,10 @@ function renderWeatherToday(weatherData) {
 }
 
 
-
+renderLoader()
 updateWeatherData('london,uk', null, null, 'uk').then(weatherData => {
     renderWeatherCards(weatherData)
     renderWeatherToday(weatherData)
 })
 
-// TODO loading time display
 // TODO card color?
